@@ -58,6 +58,50 @@ else:
     _mb_release_search = musicbrainzngs.search_releases
     _mb_recording_search = musicbrainzngs.search_recordings
 
+
+class MusicBrainzSource(beets.plugins.BeetsPlugin):
+    def candidates(self, items=[], artist=None, album=None, va_likely=False, album_id=None):
+        out = []
+
+        if album_id:
+            try:
+                out.append(album_for_id(album_id))
+            except MusicBrainzAPIError as exc:
+                exc.log(log)
+        else:
+            # Base candidates if we have album and artist to match.
+            if artist and album:
+                try:
+                    out.extend(match_album(artist, album, len(items)))
+                except MusicBrainzAPIError as exc:
+                    exc.log(log)
+
+            # Also add VA matches from MusicBrainz where appropriate.
+            if va_likely and album:
+                try:
+                    out.extend(match_album(None, album, len(items)))
+                except MusicBrainzAPIError as exc:
+                    exc.log(log)
+        return out
+
+    def item_candidates(self, item=None, artist=None, title=None, track_id=None):
+        out = []
+
+        # MusicBrainz candidates.
+        if track_id:
+            try:
+                out.append(track_for_id(track_id))
+            except MusicBrainzAPIError as exc:
+                exc.log(log)
+        elif artist and title:
+            try:
+                out.extend(match_track(artist, title))
+            except MusicBrainzAPIError as exc:
+                exc.log(log)
+
+        return out
+
+MusicBrainzSource.listen('pluginload')
 def configure():
     """Set up the python-musicbrainz-ngs module according to settings
     from the beets configuration. This should be called at startup.

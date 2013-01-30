@@ -17,7 +17,6 @@ import logging
 from collections import namedtuple
 
 from beets import plugins
-from beets.autotag import mb
 from beets import config
 
 log = logging.getLogger('beets')

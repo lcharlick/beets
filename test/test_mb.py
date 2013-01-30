@@ -15,7 +15,7 @@
 """Tests for MusicBrainz API wrapper.
 """
 from _common import unittest
-from beets.autotag import mb
+from beetsplug import mb
 
 class MBAlbumInfoTest(unittest.TestCase):
     def _make_release(self, date_str='2009', tracks=None):
