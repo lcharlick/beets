@@ -194,6 +194,16 @@ def find_plugins():
         plugins.append(_instances[cls])
     return plugins
 
+def get_plugin(name):
+    """Searches for and returns a beetsplug instance whose name
+    matches the name provided.
+    """
+    log.debug('Finding plugin with name: %s' % name)
+    for plugin in find_plugins():
+        mod = plugin.__module__.split('.')[1]
+        if mod == name:
+            return plugin
+
 
 # Communication with plugins.
 
