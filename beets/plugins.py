@@ -63,13 +63,13 @@ class BeetsPlugin(object):
         """
         return 0.0, 0.0
 
-    def candidates(self, items):
+    def candidates(self, items, artist, album, va_likely):
         """Should return a sequence of AlbumInfo objects that match the
         album whose items are provided.
         """
         return ()
 
-    def item_candidates(self, item):
+    def item_candidates(self, item, artist, title):
         """Should return a sequence of TrackInfo objects that match the
         item provided.
         """

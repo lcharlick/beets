@@ -633,6 +633,8 @@ def import_files(lib, paths, query):
 
 import_cmd = ui.Subcommand('import', help='import new music',
     aliases=('imp', 'im'))
+import_cmd.parser.add_option('--source', action='store',
+    default='mb', dest='source', help="the metadata source to fetch from")
 import_cmd.parser.add_option('-c', '--copy', action='store_true',
     default=None, help="copy tracks into library directory (default)")
 import_cmd.parser.add_option('-C', '--nocopy', action='store_false',

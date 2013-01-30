@@ -18,6 +18,7 @@ from collections import namedtuple
 
 from beets import plugins
 from beets.autotag import mb
+from beets import config
 
 log = logging.getLogger('beets')
 
@@ -128,19 +129,21 @@ TrackMatch = namedtuple('TrackMatch', ['distance', 'info'])
 
 # Aggregation of sources.
 
+def _get_source():
+    """Load and return the data source specified in the beets
+    config object.
+    """
+    name = config['import']['source'].get()
+    plugins.load_plugins([name])
+    return plugins.get_plugin(name)
+
 def _album_for_id(album_id):
     """Get an album corresponding to a MusicBrainz release ID."""
-    try:
-        return mb.album_for_id(album_id)
-    except mb.MusicBrainzAPIError as exc:
-        exc.log(log)
+    return _get_source().candidates(album_id=album_id)[0]
 
 def _track_for_id(track_id):
     """Get an item for a recording MBID."""
-    try:
-        return mb.track_for_id(track_id)
-    except mb.MusicBrainzAPIError as exc:
-        exc.log(log)
+    return _get_source().item_candidates(track_id=track_id)[0]
 
 def _album_candidates(items, artist, album, va_likely):
     """Search for album matches. ``items`` is a list of Item objects
@@ -149,42 +152,11 @@ def _album_candidates(items, artist, album, va_likely):
     entered by the user. ``va_likely`` is a boolean indicating whether
     the album is likely to be a "various artists" release.
     """
-    out = []
-
-    # Base candidates if we have album and artist to match.
-    if artist and album:
-        try:
-            out.extend(mb.match_album(artist, album, len(items)))
-        except mb.MusicBrainzAPIError as exc:
-            exc.log(log)
-
-    # Also add VA matches from MusicBrainz where appropriate.
-    if va_likely and album:
-        try:
-            out.extend(mb.match_album(None, album, len(items)))
-        except mb.MusicBrainzAPIError as exc:
-            exc.log(log)
-
-    # Candidates from plugins.
-    out.extend(plugins.candidates(items))
-
-    return out
+    return _get_source().candidates(items, artist, album, va_likely)
 
 def _item_candidates(item, artist, title):
     """Search for item matches. ``item`` is the Item to be matched.
     ``artist`` and ``title`` are strings and either reflect the item or
     are specified by the user.
     """
-    out = []
-
-    # MusicBrainz candidates.
-    if artist and title:
-        try:
-            out.extend(mb.match_track(artist, title))
-        except mb.MusicBrainzAPIError as exc:
-            exc.log(log)
-
-    # Plugin candidates.
-    out.extend(plugins.item_candidates(item))
-
-    return out
+    return _get_source().item_candidates(item, artist, title)
